@@ -11158,7 +11158,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                             default:
                                 break;
                         }
-                    } */ sevi ende
+                    } */ // sevi ende
 
                     if (enchant_spell_id)
                     {
