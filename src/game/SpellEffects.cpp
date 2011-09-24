@@ -2721,7 +2721,7 @@ void Spell::EffectEnchantItemTmp(SpellEffectIndex eff_idx)
         return;
 
     uint32 enchant_id = m_spellInfo->EffectMiscValue[eff_idx];
-
+	/* anfang vom auskommentieren sevi
     // Shaman Rockbiter Weapon
     if (eff_idx==EFFECT_INDEX_0 && m_spellInfo->Effect[EFFECT_INDEX_1]==SPELL_EFFECT_DUMMY)
     {
@@ -2774,7 +2774,7 @@ void Spell::EffectEnchantItemTmp(SpellEffectIndex eff_idx)
                 sLog.outError("Spell::EffectEnchantItemTmp: Damage %u not handled in S'RW",enchnting_damage);
                 return;
         }
-    }
+    } */ // ende von auskommentieren
 
     if (!enchant_id)
     {
@@ -2808,12 +2808,19 @@ void Spell::EffectEnchantItemTmp(SpellEffectIndex eff_idx)
     else if(m_spellInfo->SpellVisual==563)
         duration = 600;                                     // 10 mins
     // shaman rockbiter enchantments
-    else if(m_spellInfo->SpellVisual==0)
-        duration = 1800;                                    // 30 mins
+    else if(m_spellInfo->SpellVisual==58)
+        duration = 300;                                    // 5 mins
     else if(m_spellInfo->Id == 29702)                       // Greater Ward of Shielding
         duration = 300;                                     // 5 mins
     else if(m_spellInfo->Id == 37360)                       // Consecrated Weapon
         duration = 300;                                     // 5 mins
+	// von sevi eingebaut für flammentonque enchantments, fix von scholaly
+	// Shamane flamentonque entchantments
+	else if(m_spellInfo->SpellVisual==290)
+		duration = 300;										// 5 min
+	else if(m_spellInfo->SpellVisual==291)
+		duration = 300;										// 5 min
+	// ende von einbaun
     // default case
     else
         duration = 3600;                                    // 1 hour

@@ -11142,7 +11142,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
 
                     // Flametongue Weapon (Passive), Ranks (used not existed equip spell id in pre-3.x spell.dbc)
                     // See Player::CastItemCombatSpell for workaround implementation
-                    if (enchant_spell_id && apply)
+                  /* // sevi anfang if (enchant_spell_id && apply)
                     {
                         switch (enchant_spell_id)
                         {
@@ -11158,7 +11158,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                             default:
                                 break;
                         }
-                    }
+                    } */ sevi ende
 
                     if (enchant_spell_id)
                     {
@@ -19104,4 +19104,12 @@ bool Player::IsImmuneToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex
             break;
     }
     return Unit::IsImmuneToSpellEffect(spellInfo, index);
+}
+// neu von sevi
+
+WorldLocation Player::GetStartPosition() const
+{
+    PlayerInfo const *info = sObjectMgr.GetPlayerInfo(getRace(), getClass());
+    uint32 mapId = info->mapId;
+    return WorldLocation(mapId, info->positionX, info->positionY, info->positionZ, 0);
 }
