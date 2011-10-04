@@ -75,8 +75,10 @@ bool ChatHandler::HandleAccountCommand(char* args)
  */
 bool ChatHandler::HandleRateCommand(char* args)
 {
-    if(!*args)
+    if(!*args) {
+        PSendSysMessage("Current XP rate is: %d", m_session->GetPlayer()->getXPRate());
         return false;
+    }
 
     Player *chr = m_session->GetPlayer();
 
@@ -89,9 +91,13 @@ bool ChatHandler::HandleRateCommand(char* args)
         SetSentErrorMessage(true);
         return false;
     }
+    if( xpRate > sWorld.getConfig(CONFIG_UINT32_XP_RATE_COMMAND)) {
+        xpRate = sWorld.getConfig(CONFIG_UINT32_XP_RATE_COMMAND);
+        PSendSysMessage("Maximum XP rate is: %d", xpRate);
+    }
 
     chr->setXPRate(xpRate);
-    PSendSysMessage("Setting Experience rate to : %d times", xpRate);
+    PSendSysMessage("Setting experience rate to: %d", xpRate);
 
     return true;
 }
