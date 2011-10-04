@@ -356,6 +356,9 @@ UpdateMask Player::updateVisualBits;
 
 Player::Player (WorldSession *session): Unit(), m_mover(this), m_camera(this), m_reputationMgr(this)
 {
+    // Command.Rate
+    xpRate = 0;
+
     m_transport = 0;
 
     m_speakTime = 0;
@@ -2270,6 +2273,11 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 {
     if ( xp < 1 )
         return;
+    // Command.Rate
+    if( getXPRate() <= 0 ) {
+        setXPRate(1);
+    }
+    xp = xp * getXPRate();
 
     if(!isAlive())
         return;
@@ -3368,9 +3376,31 @@ void Player::_SaveSpellCooldowns()
             ++itr;
     }
 }
+/**
+ * Is this character a PvP only character?<br/>
+ * <br/>
+ */
+bool Player::isPvPCharacter() {
+    //uint32 questId = sWorld.getConfig(CONFIG_UINT32_PVP_CHARACTER_QUESTID);
+    uint32 questId = 32;
+    QuestStatus qStatus = this->GetQuestStatus(questId);
+    if (qStatus == QUEST_STATUS_COMPLETE) {
+        return true;
+    }
 
-uint32 Player::resetTalentsCost() const
-{
+    return false;
+}
+
+uint32 Player::resetTalentsCost() {
+    // PvP.Character? -> resetTalents ist for free
+    if (isPvPCharacter()) {
+        DEBUG_LOG("resetTalentsCost:: Is PvP.Character");
+        //ChatHandler(this).PSendSysMessage("PvP.Characters do not pay for talent reset");
+        return 0;
+    } else {
+        DEBUG_LOG("resetTalentsCost:: Not a PvP.Character");
+    }
+
     // The first time reset costs 1 gold
     if(m_resetTalentsCost < 1*GOLD)
         return 1*GOLD;
@@ -7716,6 +7746,43 @@ void Player::SendInitWorldStates(uint32 zoneid)
         }
         GetSession()->SendPacket(&data);
     }
+    // PvP.Character? -> They are not allowed to be in the open world.
+    if (!InBattleGround() && isPvPCharacter()) {
+        // Has completed the "I am PvP" Quest
+        DEBUG_LOG("Ist PvP.Character");
+        uint32 zone_id, area_id;
+        GetZoneAndAreaId(zone_id, area_id);
+        // Relocate player
+        // Horde or Alliance?
+        if (this->getRaceMask() & RACEMASK_ALLIANCE) {
+            DEBUG_LOG("Ist PvP.Character:: RACEMASK_ALLIANCE");
+            // Still in Stormwind?
+            if ((this->GetMapId() != 0) || (area_id != 1519)) {
+                // Relocate Player
+                DEBUG_LOG("Ist PvP.Character:: Nicht mehr in Stormwind");
+                ChatHandler(this).PSendSysMessage(
+                        "PvP.Characters must not be in the open world - porting back to home city");
+                TeleportTo(0, -8833.38, 628.628, 94.0066, GetOrientation(), 0);
+            } else {
+                DEBUG_LOG("Ist PvP.Character:: In Stormwind");
+            }
+        } else {
+            // Map 450: Horde PvP Kaserne
+            DEBUG_LOG("Ist PvP.Character:: RACEMASK_HORDE");
+            // Still in Orgrimmar or in PvP Kaserne?
+            if (!((this->GetMapId() == 450) || ((this->GetMapId() == 1)
+                    && (area_id == 1637)))) {
+                // Relocate Player
+                DEBUG_LOG("Ist PvP.Character:: Nicht mehr in Orgrimmar");
+                ChatHandler(this).PSendSysMessage(
+                        "PvP.Characters must not be in the open world - porting back to home city");
+                TeleportTo(1, 1629.36, -4373.39, 31.2564, GetOrientation(), 0);
+            } else {
+                DEBUG_LOG("Ist PvP.Character:: Immer noch in Orgrimmar");
+            }
+        }
+    } // not in battleground AND is PvP.Character
+
 }
 
 uint32 Player::GetXPRestBonus(uint32 xp)
@@ -12319,6 +12386,9 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     // Not give XP in case already completed once repeatable quest
     uint32 XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld.getConfig(CONFIG_FLOAT_RATE_XP_QUEST));
 
+    // Command.Rate
+    XP = XP * getXPRate();
+
     if (getLevel() < sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))
         GiveXP(XP , NULL);
     else
@@ -16790,6 +16860,37 @@ void Player::InitDisplayIds()
     }
 }
 
+/**
+ * User can specify his XP Rate for kills, quests or exploration<br/>
+ * <br/>
+ * command.Rate
+ *
+ */
+void Player::setXPRate( uint32 pRate ) {
+    // Limit to 20
+    if( pRate > 20 ) {
+        pRate = 20;
+    }
+    if( pRate < 0 ) {
+        pRate = 1;
+    }
+    xpRate = pRate;
+}
+/**
+ * User can specify his XP Rate for kills, quests or exploration<br/>
+ * <br/>
+ * command.Rate
+ *
+ */
+uint32 Player::getXPRate() {
+    // Limit to 20
+    if( xpRate <= 0 ) {
+        xpRate = 1;
+    }
+    return xpRate;
+}
+
+
 // Return true is the bought item has a max count to force refresh of window by caller
 bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, uint8 bag, uint8 slot)
 {
@@ -16875,6 +16976,16 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
 
     // reputation discount
     price = uint32(floor(price * GetReputationPriceDiscount(pCreature)));
+
+    // PvP.Character? -> They do not pay for items.
+    if (isPvPCharacter()) {
+        DEBUG_LOG("BuyItemFromVendor:: Is PvP.Character");
+        ChatHandler(this).PSendSysMessage("PvP.Characters has not to pay for items - buyprice is always 0");
+        price = 0;
+    } else {
+        DEBUG_LOG("BuyItemFromVendor:: Not a PvP.Character");
+    }
+
 
     if (GetMoney() < price)
     {

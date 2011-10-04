@@ -623,6 +623,8 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand commandTable[] =
     {
+        // Command.Rate
+        { "rate",           SEC_PLAYER,         false, &ChatHandler::HandleRateCommand,                "", NULL  },
         { "account",        SEC_PLAYER,         true,  NULL,                                           "", accountCommandTable  },
         { "auction",        SEC_ADMINISTRATOR,  false, NULL,                                           "", auctionCommandTable  },
         { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                           "", castCommandTable     },

@@ -943,6 +943,11 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         void InitStatsForLevel(bool reapplyMods = false);
 
+            // command.Rate
+        uint32 xpRate;
+        void setXPRate( uint32 pRate );
+        uint32 getXPRate();
+
         // Played Time Stuff
         time_t m_logintime;
         time_t m_Last_tick;
@@ -1372,10 +1377,15 @@ class MANGOS_DLL_SPEC Player : public Unit
         void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
         void UpdateFreeTalentPoints(bool resetIfNeed = true);
         bool resetTalents(bool no_cost = false);
-        uint32 resetTalentsCost() const;
+        uint32 resetTalentsCost();
         void InitTalentForLevel();
         void LearnTalent(uint32 talentId, uint32 talentRank);
         uint32 CalculateTalentsPoints() const;
+
+        // PvP.Character?
+        // Is this character a special PvP Character?
+        // -> Then the character finished the "I want PvP only" quest
+        bool isPvPCharacter();
 
         uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
         void SetFreePrimaryProfessions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2, profs); }

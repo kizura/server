@@ -65,6 +65,38 @@ bool ChatHandler::HandleAccountCommand(char* args)
     return true;
 }
 
+/**
+ * User can specify how experience he will get by solving quests,
+ * killing NPCs or exploring.<br/>
+ * <br/>
+ *
+ * Command.Rate
+ *
+ */
+bool ChatHandler::HandleRateCommand(char* args)
+{
+    if(!*args)
+        return false;
+
+    Player *chr = m_session->GetPlayer();
+
+    int32 xpRate = atoi(args);
+    int32 xpRateM = atoi(args);
+
+    if (xpRate <= 0 || xpRateM <= 0 || xpRateM < xpRate)
+    {
+        SendSysMessage(LANG_BAD_VALUE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    chr->setXPRate(xpRate);
+    PSendSysMessage("Setting Experience rate to : %d times", xpRate);
+
+    return true;
+}
+
+
 bool ChatHandler::HandleStartCommand(char* /*args*/)
 {
     Player *chr = m_session->GetPlayer();
