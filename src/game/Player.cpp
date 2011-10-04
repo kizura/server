@@ -16867,9 +16867,10 @@ void Player::InitDisplayIds()
  *
  */
 void Player::setXPRate( uint32 pRate ) {
-    // Limit to 20
-    if( pRate > 20 ) {
-        pRate = 20;
+    // Limit to config settings
+    uint32 maximumXPrate = sWorld.getConfig(CONFIG_UINT32_XP_RATE_COMMAND);
+    if( pRate >  maximumXPrate) {
+        pRate = maximumXPrate;
     }
     if( pRate < 0 ) {
         pRate = 1;
