@@ -51,6 +51,11 @@ void WorldSession::HandleAuctionHelloOpcode(WorldPacket & recv_data)
     if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
+    if (GetPlayer()->isPvPCharacter()) {
+        ChatHandler(GetPlayer()).PSendSysMessage("PvP.Characters cannot use the auction house.");
+        return;
+    }
+
     SendAuctionHello(unit);
 }
 

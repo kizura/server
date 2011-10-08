@@ -163,6 +163,23 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
         pl->SendMailResult(0, MAIL_SEND, MAIL_ERR_NOT_YOUR_TEAM);
         return;
     }
+    // PvP.Chars?
+    if (receive) {
+        if ((receive->isPvPCharacter() && !pl->isPvPCharacter())
+                || (!receive->isPvPCharacter() && pl->isPvPCharacter())) {
+            pl->SendMailResult(0, MAIL_SEND, MAIL_ERR_NOT_YOUR_TEAM);
+            ChatHandler(pl).PSendSysMessage(
+                    "PvP.Characters and PvE.Characters cannot interchange mail.");
+            return;
+        }
+    } else {
+        if (pl->isPvPCharacter()) {
+            pl->SendMailResult(0, MAIL_SEND, MAIL_ERR_NOT_YOUR_TEAM);
+            ChatHandler(pl).PSendSysMessage(
+                    "The recipient is offline - cannot find out if it is also a PvP.Character.");
+            return;
+        }
+    }
 
     uint32 rc_account = receive
         ? receive->GetSession()->GetAccountId()
