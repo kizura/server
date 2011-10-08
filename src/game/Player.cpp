@@ -16977,6 +16977,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
     // reputation discount
     price = uint32(floor(price * GetReputationPriceDiscount(pCreature)));
 
+    /*
     // PvP.Character? -> They do not pay for items.
     if (isPvPCharacter()) {
         DEBUG_LOG("BuyItemFromVendor:: Is PvP.Character");
@@ -16985,6 +16986,33 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
     } else {
         DEBUG_LOG("BuyItemFromVendor:: Not a PvP.Character");
     }
+    */
+    // PvP.Char: Can interact with special pvp vendor
+    // PvE.Char: Can only act with "normal vendors"
+    if (isPvPCharacter()) {
+        DEBUG_LOG("BuyItemFromVendor:: Is PvP.Character");
+        string configSub = sConfig.GetStringDefault("PvP.Character.Vendor", "" );
+        if( (pCreature->GetSubName() != null) && !strcmp(pCreature->GetSubName(), configSub) ) {
+            DEBUG_LOG("BuyItemFromVendor:: Special PvP Vendor -> Buyprice == 0");
+            ChatHandler(this).PSendSysMessage("PvP.Characters has not to pay for items - buyprice is always 0");
+            price = 0;
+        } else {
+            DEBUG_LOG("BuyItemFromVendor:: Not a PvP Vendor -> Buyprice normal");
+        }
+    } else {
+        // PvE character
+        DEBUG_LOG("BuyItemFromVendor:: Not a PvP.Character");
+        string configSub = sConfig.GetStringDefault("PvP.Character.Vendor", "" );
+        if( (pCreature->GetSubName() != null) && !strcmp(pCreature->GetSubName(), configSub) ) {
+            DEBUG_LOG("BuyItemFromVendor:: Special PvP Vendor -> But PvE Char");
+            ChatHandler(this).PSendSysMessage("This vendor is only for PvP Characters.");
+            SendBuyError(BUY_ERR_SELLER_DONT_LIKE_YOU, pCreature, item, 0);
+            return false;
+        } else {
+            DEBUG_LOG("BuyItemFromVendor:: Not a PvP Vendor -> Buyprice normal");
+        }
+    }
+
 
 
     if (GetMoney() < price)
