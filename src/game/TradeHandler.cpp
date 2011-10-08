@@ -29,6 +29,7 @@
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "Language.h"
+#include "Chat.h"
 
 void WorldSession::SendTradeStatus(TradeStatus status)
 {
@@ -604,6 +605,13 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     if (!sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_TRADE) && pOther->GetTeam() !=_player->GetTeam() )
     {
         SendTradeStatus(TRADE_STATUS_WRONG_FACTION);
+        return;
+    }
+    // PvP.Chars?
+    if ((pOther->isPvPCharacter() && !_player->isPvPCharacter())
+            || (!pOther->isPvPCharacter() && _player->isPvPCharacter())) {
+        SendTradeStatus(TRADE_STATUS_WRONG_FACTION);
+        ChatHandler(_player).PSendSysMessage("PvP.Characters and PvE.Characters cannot trade");
         return;
     }
 

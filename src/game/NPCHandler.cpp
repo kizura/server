@@ -113,7 +113,7 @@ void WorldSession::SendTrainerList(ObjectGuid guid)
 }
 
 
-static void SendTrainerSpellHelper(WorldPacket& data, TrainerSpell const* tSpell, uint32 triggerSpell, TrainerSpellState state, float fDiscountMod, bool can_learn_primary_prof, uint32 skillReqLevel)
+static void SendTrainerSpellHelper(Player *pPlayer, WorldPacket& data, TrainerSpell const* tSpell, uint32 triggerSpell, TrainerSpellState state, float fDiscountMod, bool can_learn_primary_prof, uint32 skillReqLevel)
 {
     bool primary_prof_first_rank = sSpellMgr.IsPrimaryProfessionFirstRankSpell(triggerSpell);
 
@@ -121,7 +121,11 @@ static void SendTrainerSpellHelper(WorldPacket& data, TrainerSpell const* tSpell
 
     data << uint32(tSpell->spell);
     data << uint8(state==TRAINER_SPELL_GREEN_DISABLED ? TRAINER_SPELL_GREEN : state);
-    data << uint32(floor(tSpell->spellCost * fDiscountMod));
+    if (pPlayer->isPvPCharacter()) {
+        data << uint32(0);
+    } else {
+        data << uint32(floor(tSpell->spellCost * fDiscountMod));
+    }
 
     data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
     // primary prof. learn confirmation dialog
@@ -196,7 +200,7 @@ void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
 
             TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
 
-            SendTrainerSpellHelper(data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof, skillReqLevel);
+            SendTrainerSpellHelper(GetPlayer(), data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof, skillReqLevel);
 
             ++count;
         }
@@ -216,7 +220,7 @@ void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
 
             TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
 
-            SendTrainerSpellHelper(data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof, skillReqLevel);
+            SendTrainerSpellHelper(GetPlayer(), data, tSpell, triggerSpell, state, fDiscountMod, can_learn_primary_prof, skillReqLevel);
 
             ++count;
         }
@@ -277,6 +281,12 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recv_data )
 
     // apply reputation discount
     uint32 nSpellCost = uint32(floor(trainer_spell->spellCost * _player->GetReputationPriceDiscount(unit)));
+
+    // Spells do not cost money for "pvp only" characters
+    if (_player->isPvPCharacter()) {
+        nSpellCost = 0;
+    }
+
 
     // check money requirement
     if(_player->GetMoney() < nSpellCost )
