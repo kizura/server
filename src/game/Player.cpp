@@ -16989,7 +16989,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
     */
     // PvP.Char: Can interact with special pvp vendor
     // PvE.Char: Can only act with "normal vendors"
-    if (isPvPCharacter()) {
+ /*   if (isPvPCharacter()) {
         DEBUG_LOG("BuyItemFromVendor:: Is PvP.Character");
         string configSub = sConfig.GetStringDefault("PvP.Character.Vendor", "" );
         if( (pCreature->GetSubName() != null) && !strcmp(pCreature->GetSubName(), configSub) ) {
@@ -17011,7 +17011,7 @@ bool Player::BuyItemFromVendor(ObjectGuid vendorGuid, uint32 item, uint8 count, 
         } else {
             DEBUG_LOG("BuyItemFromVendor:: Not a PvP Vendor -> Buyprice normal");
         }
-    }
+    } */
 
 
 
