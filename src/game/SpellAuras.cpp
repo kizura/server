@@ -45,7 +45,6 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#include "extras/Mod.h"
 
 #define NULL_AURA_SLOT 0xFF
 
@@ -221,7 +220,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraModRangedAttackPowerPercent,           //167 SPELL_AURA_MOD_RANGED_ATTACK_POWER_PCT
     &Aura::HandleNoImmediateEffect,                         //168 SPELL_AURA_MOD_DAMAGE_DONE_VERSUS            implemented in Unit::SpellDamageBonusDone, Unit::MeleeDamageBonusDone
     &Aura::HandleNoImmediateEffect,                         //169 SPELL_AURA_MOD_CRIT_PERCENT_VERSUS           implemented in Unit::DealDamageBySchool, Unit::DoAttackDamage, Unit::SpellCriticalBonus
-    &Aura::HandleDetectAmore,                               //170 SPELL_AURA_DETECT_AMORE       only for Detect Amore spell
+    &Aura::HandleNULL,                                      //170 SPELL_AURA_DETECT_AMORE       only for Detect Amore spell
     &Aura::HandleAuraModIncreaseSpeed,                      //171 SPELL_AURA_MOD_SPEED_NOT_STACK
     &Aura::HandleAuraModIncreaseMountedSpeed,               //172 SPELL_AURA_MOD_MOUNTED_SPEED_NOT_STACK
     &Aura::HandleUnused,                                    //173 SPELL_AURA_ALLOW_CHAMPION_SPELLS  only for Proclaim Champion spell
@@ -584,7 +583,6 @@ void Aura::ApplyModifier(bool apply, bool Real)
     if(aura < TOTAL_AURAS)
         (*this.*AuraHandler [aura])(apply, Real);
 
-    sMod.auraApplyModifier(this,aura,apply,Real);
     SetInUse(false);
     GetHolder()->SetInUse(false);
 }
@@ -2727,11 +2725,6 @@ void Aura::HandleInvisibilityDetect(bool apply, bool Real)
         ((Player*)target)->GetCamera().UpdateVisibilityForOwner();
 }
 
-void Aura::HandleDetectAmore(bool apply, bool /*real*/)
-{
-    GetTarget()->ApplyModByteFlag(PLAYER_FIELD_BYTES2, 2, PLAYER_FIELD_BYTE2_DETECT_AMORE, apply);
-}
-
 void Aura::HandleAuraModRoot(bool apply, bool Real)
 {
     // only at real add/remove aura
@@ -3619,6 +3612,15 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
     {
         case 1178:                                          // Bear Form (Passive)
         case 9635:                                          // Dire Bear Form (Passive)
+        {
+            if(Real)
+            {
+                float pct = target->GetHealthPercent();
+                target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(m_modifier.m_amount), apply);
+                target->SetHealthPercent(pct);
+            }
+            return;
+        }
         case 12976:                                         // Warrior Last Stand triggered spell
         {
             if(Real)
@@ -4140,9 +4142,6 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                     if ((*i)->GetSpellProto()->SpellIconID == 240 && (*i)->GetModifier()->m_miscvalue == 3)
                     {
                         int32 HotWMod = (*i)->GetModifier()->m_amount;
-                        if(GetModifier()->m_miscvalue == FORM_CAT)
-                            HotWMod /= 2;
-
                         target->CastCustomSpell(target, HotWSpellId, &HotWMod, NULL, NULL, true, NULL, this);
                         break;
                     }
@@ -5312,6 +5311,22 @@ void SpellAuraHolder::HandleSpellSpecificBoosts(bool apply)
         {
             switch(GetId())
             {
+                case 11129:                                 // Combustion (remove triggered aura stack)
+                {
+                    if(!apply)
+                        spellId1 = 28682;
+                    else
+                        return;
+                    break;
+                }
+                case 28682:                                 // Combustion (remove main aura)
+                {
+                    if(!apply)
+                        spellId1 = 11129;
+                    else
+                        return;
+                    break;
+                }
                 case 11189:                                 // Frost Warding
                 case 28332:
                 {
