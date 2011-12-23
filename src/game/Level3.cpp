@@ -4618,6 +4618,19 @@ bool ChatHandler::HandleQuestCompleteCommand(char* args)
         return false;
     }
 
+    // Is it a "normal" player?
+    // -> Check if the quest can be completed
+    if (player->GetSession()->GetSecurity() == SEC_PLAYER) {
+        if (!sObjectMgr.IsQuestCompletable(entry)) {
+            PSendSysMessage(
+                    "Quest ID: %u - This quest is not flagged as completable.",
+                    entry);
+            return false;
+        } else {
+            PSendSysMessage("This quest can be completed.");
+        }
+    }
+
     // Add quest items for quests that require items
     for(uint8 x = 0; x < QUEST_ITEM_OBJECTIVES_COUNT; ++x)
     {

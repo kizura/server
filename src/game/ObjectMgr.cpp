@@ -2944,8 +2944,47 @@ void ObjectMgr::LoadGroups()
     sLog.outString( ">> Loaded %u group members total", count );
 }
 
-void ObjectMgr::LoadQuests()
-{
+/**
+ * Enhanced "quest complete" command for players<br/><br/>
+ * Players can complete quests, that are marked as "can be completed" -
+ * References to these quests are stored in a special database table.
+ *
+ */
+bool ObjectMgr::IsQuestCompletable(uint32 quest_id) {
+    QuestCompleteMap::const_iterator itr = mQuestCompleteMap.find( quest_id );
+    if( itr != mQuestCompleteMap.end() )
+        return itr->second;
+    return false;
+}
+
+void ObjectMgr::LoadQuests() {
+    // quest_complete
+    mQuestCompleteMap.clear();
+    {
+        QueryResult *result = WorldDatabase.Query("SELECT quest_id"
+            " FROM quest_complete");
+        if (!result) {
+            BarGoLink bar(1);
+            bar.step();
+
+            sLog.outString();
+            sLog.outString(">> Loaded 0 quest completions");
+            sLog.outErrorDb("`quest_complete` table is empty!");
+        } else {
+            BarGoLink bar(result->GetRowCount());
+            do {
+                bar.step();
+                Field *fields = result->Fetch();
+
+                mQuestCompleteMap[fields[0].GetUInt32()] = true;
+            } while (result->NextRow());
+            sLog.outString();
+            sLog.outString( ">> Loaded %lu quest completions", (unsigned long)mQuestCompleteMap.size() );
+
+            delete result;
+        }
+    }
+
     // For reload case
     for(QuestMap::const_iterator itr=mQuestTemplates.begin(); itr != mQuestTemplates.end(); ++itr)
         delete itr->second;
