@@ -3680,6 +3680,20 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
 
     damage = int32(CalculateDamage(i, unitTarget) * DamageMultiplier);
 
+    // HACK_KIZURA: Fix Quest Triage
+    // When casting "Triage" spell make sure you have the NPC as a target and
+    // that you cast the spell on yourself. Sound weird, but it works.
+    if (m_spellInfo->Id == 20804) {
+        if (unitTarget->GetTypeId() == TYPEID_PLAYER) {
+            Player* myPlayer = ((Player*) unitTarget);
+            Creature *cTarget = myPlayer->GetMap()->GetAnyTypeCreature(
+                    myPlayer->GetSelectionGuid());
+            if (cTarget)
+                cTarget->AI()->SpellHit(myPlayer, m_spellInfo);
+        }
+    }
+
+
     DEBUG_FILTER_LOG(LOG_FILTER_SPELL_CAST, "Spell %u Effect%d : %u Targets: %s, %s, %s",
         m_spellInfo->Id, i, eff,
         unitTarget ? unitTarget->GetGuidStr().c_str() : "-",
