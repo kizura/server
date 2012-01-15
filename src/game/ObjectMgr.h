@@ -398,6 +398,8 @@ class IdGenerator
         char const* m_name;
         T m_nextGuid;
 };
+// Enhanced quest complete command - inspired by vanilla-wow.org
+typedef std::map<uint32, bool> QuestCompleteMap;
 
 class ObjectMgr
 {
@@ -973,6 +975,9 @@ class ObjectMgr
         }
 
         QuestRelationsMap& GetCreatureQuestRelationsMap() { return m_CreatureQuestRelations; }
+
+        bool IsQuestCompletable(uint32 quest_id);
+
     protected:
 
         // first free id for selected id type
@@ -997,6 +1002,9 @@ class ObjectMgr
         ObjectGuidGenerator<HIGHGUID_CORPSE>     m_CorpseGuids;
 
         QuestMap            mQuestTemplates;
+        // Can this quest be completed by the "quest complete" command for a
+        // normal player?
+        QuestCompleteMap mQuestCompleteMap;
 
         typedef UNORDERED_MAP<uint32, GossipText> GossipTextMap;
         typedef UNORDERED_MAP<uint32, uint32> QuestAreaTriggerMap;

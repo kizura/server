@@ -55,7 +55,6 @@
 #include "InstanceData.h"
 #include "DBCStores.h"
 #include "CreatureEventAIMgr.h"
-#include "extras/Mod.h"
 
 //reload commands
 bool ChatHandler::HandleReloadAllCommand(char* /*args*/)
@@ -202,7 +201,6 @@ bool ChatHandler::HandleReloadConfigCommand(char* /*args*/)
 {
     sLog.outString( "Re-Loading config settings..." );
     sWorld.LoadConfigSettings(true);
-    sMod.LoadModConfSettings();
     sMapMgr.InitializeVisibilityDistanceInfo();
     SendGlobalSysMessage("World config settings reloaded.");
     return true;
@@ -4618,6 +4616,19 @@ bool ChatHandler::HandleQuestCompleteCommand(char* args)
         PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, entry);
         SetSentErrorMessage(true);
         return false;
+    }
+
+    // Is it a "normal" player?
+    // -> Check if the quest can be completed
+    if (player->GetSession()->GetSecurity() == SEC_PLAYER) {
+        if (!sObjectMgr.IsQuestCompletable(entry)) {
+            PSendSysMessage(
+                    "Quest ID: %u - This quest is not flagged as completable.",
+                    entry);
+            return false;
+        } else {
+            PSendSysMessage("This quest can be completed.");
+        }
     }
 
     // Add quest items for quests that require items
