@@ -1,0 +1,1 @@
+INSERT INTO `command` (`name`, `security`, `help`) VALUES ('reload quest_complete', '3', 'Syntax: .reload quest_complete');
