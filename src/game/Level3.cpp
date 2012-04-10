@@ -849,6 +849,15 @@ bool ChatHandler::HandleReloadLocalesQuestCommand(char* /*args*/)
     SendGlobalSysMessage("DB table `locales_quest` reloaded.");
     return true;
 }
+bool ChatHandler::HandleReloadQuestCompleteCommand(char* /*args*/)
+{
+    sLog.outString( "Re-Loading Quest Complete ... ");
+        sObjectMgr.LoadQuestComplete();
+    SendGlobalSysMessage("DB table `quest_complete' reloaded.");
+    return true;
+}
+
+
 
 bool ChatHandler::HandleLoadScriptsCommand(char* args)
 {
@@ -874,6 +883,7 @@ bool ChatHandler::HandleLoadScriptsCommand(char* args)
 
     return true;
 }
+
 
 bool ChatHandler::HandleAccountSetGmLevelCommand(char* args)
 {

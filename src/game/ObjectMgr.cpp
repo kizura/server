@@ -2957,6 +2957,35 @@ bool ObjectMgr::IsQuestCompletable(uint32 quest_id) {
     return false;
 }
 
+void ObjectMgr::LoadQuestComplete()
+{
+     mQuestCompleteMap.clear();
+    {
+        QueryResult *result = WorldDatabase.Query("SELECT quest_id"
+            " FROM quest_complete");
+        if (!result) {
+            BarGoLink bar(1);
+            bar.step();
+
+            sLog.outString();
+            sLog.outString(">> Loaded 0 quest completions");
+            sLog.outErrorDb("`quest_complete` table is empty!");
+        } else {
+            BarGoLink bar(result->GetRowCount());
+            do {
+                bar.step();
+                Field *fields = result->Fetch();
+
+                mQuestCompleteMap[fields[0].GetUInt32()] = true;
+            } while (result->NextRow());
+            sLog.outString();
+            sLog.outString( ">> Loaded %lu quest completions", (unsigned long)mQuestCompleteMap.size() );
+
+            delete result;
+        }
+    }
+}
+
 void ObjectMgr::LoadQuests() {
     // quest_complete
     mQuestCompleteMap.clear();

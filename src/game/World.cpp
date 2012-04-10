@@ -818,6 +818,9 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_PVP_CHARACTER_QUESTID,    "PvP.Character.QuestId",    0);
     // If enabled the user can modify his XP rate ingame - default is factor 1
     setConfig(CONFIG_UINT32_XP_RATE_COMMAND,          "Rate.XP.Command",    1);
+   
+    /*if (reload)
+        sObjectMgr.IsQuestCompletable(entry)); */
 }
 
 /// Initialize the World
