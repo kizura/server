@@ -3172,6 +3172,7 @@ void  Aura::HandlePeriodicEnergize(bool apply, bool /*Real*/)
 		}
 		
 	}
+    m_isPeriodic = apply;
 }
 
 void Aura::HandleAuraPowerBurn(bool apply, bool /*Real*/)
