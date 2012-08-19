@@ -591,7 +591,7 @@ enum SpellEffects
     SPELL_EFFECT_127                       = 127,
     SPELL_EFFECT_128                       = 128,
     SPELL_EFFECT_129                       = 129,
-    TOTAL_SPELL_EFFECTS                    = 130
+    TOTAL_SPELL_EFFECTS                    = 131
 };
 
 enum SpellCastResult

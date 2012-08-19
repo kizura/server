@@ -185,7 +185,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUnused,                                   //127 SPELL_EFFECT_127                      future Prospecting spell, not have spells
     &Spell::EffectUnused,                                   //128 SPELL_EFFECT_128                      future SPELL_EFFECT_APPLY_AREA_AURA_FRIEND, not have spells
     &Spell::EffectUnused,                                   //129 SPELL_EFFECT_129                      future SPELL_EFFECT_APPLY_AREA_AURA_ENEMY, now only one test spell
-	//&Spell::EffectKingofTheGordok,								//130 SPELL_EFFECT_22799
+	&Spell::EffectKingofTheGordok,							//130 SPELL_EFFECT_22799
 };
 
 void Spell::EffectEmpty(SpellEffectIndex /*eff_idx*/)
@@ -5020,7 +5020,9 @@ void Spell::EffectKingofTheGordok(SpellEffectIndex eff_idx)
 	Player* player;
 		if (unitTarget->GetTypeId() != TYPEID_PLAYER)
 		return;
-		if (m_spellInfo->Id == 22799 && !unitTarget->HasAura(22799)) {
+
+		if (m_spellInfo->Id == 22799 && !unitTarget->HasAura(22799))
+        {
 		    player = (Player*)m_caster;
 		    player->setFaction(38);
 		}
